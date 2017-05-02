@@ -24,7 +24,7 @@ public class CallAndResponse {
 			@Override
 			public void read(SocketChannel ch, ByteBuffer msg) throws Exception {
 				System.out.println("PPLServer.read()");
-				AbstractPacket call=AbstractPacket.decode("io.github.dyslabs.ppl.example.Packet", msg);
+				AbstractPacket call=AbstractPacket.decode("io.github.alivety.ppl.example.Packet", msg);
 				System.out.println(call.<String>getField("call"));
 				AbstractPacket response=AbstractPacket.c(Packet1.class, "Hello to you !!!");
 				ch.write(PPL.encapsulate(response.encode()));
@@ -46,7 +46,7 @@ public class CallAndResponse {
 			@Override
 			public void read(SocketChannel ch, ByteBuffer msg) throws Exception {
 				System.out.println("PPLClient.read()");
-				AbstractPacket response=AbstractPacket.decode("io.github.dyslabs.ppl.example.Packet", msg);
+				AbstractPacket response=AbstractPacket.decode("io.github.alivety.ppl.example.Packet", msg);
 				System.out.println(response.toString());
 				server.shutdown();
 				client.shutdown();
