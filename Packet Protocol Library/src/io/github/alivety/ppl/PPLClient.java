@@ -1,7 +1,7 @@
 package io.github.alivety.ppl;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -14,8 +14,7 @@ public class PPLClient extends PPL {
 	private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 	private SocketChannel ch;
 	private Thread clientt;
-
-	public PPLClient connect(final String host, final int port) {
+	public PPLClient connect(final String host, final int port) throws InterruptedException {
 		clientt=new Thread("ppl-client-" + host + ":" + port) {
 			@Override
 			public void run() {
@@ -26,7 +25,6 @@ public class PPLClient extends PPL {
 					ch.connect(new InetSocketAddress(host, port));
 					ch.register(selector, SelectionKey.OP_CONNECT);
 					PPLClient.this.ch=ch;
-
 					while (true) {
 						selector.select();
 						final Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
@@ -50,8 +48,13 @@ public class PPLClient extends PPL {
 							}
 						}
 					}
-				} catch (final Exception e) {
-					throw new RuntimeException(e);
+				} catch (ConnectException e) {
+					Iterator<SocketListener> iter=listeners.iterator();
+					while (iter.hasNext()) iter.next().exception(ch, new RuntimeException("Unable to connect",e));
+				}
+				catch (final Exception e) {
+					Iterator<SocketListener> iter=listeners.iterator();
+					while (iter.hasNext()) iter.next().exception(ch, e);
 				}
 			}
 		};
@@ -101,10 +104,5 @@ public class PPLClient extends PPL {
 	
 	public PPLClient addListener(SocketListener l) {
 		return (PPLClient) super.addListener(l);
-	}
-	
-	public void shutdown() throws IOException {
-		clientt.stop();
-		this.ch.close();
 	}
 }

@@ -9,15 +9,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-public abstract class AbstractPacket {
-	public static AbstractPacket c(final Class<?> packet, final Object... fieldValues)
+public abstract class Packet {
+	public static Packet c(final Class<?> packet, final Object... fieldValues)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException,
 			InstantiationException, InvocationTargetException, NoSuchMethodException {
 		final Constructor<?> ctor = packet.getConstructor();
-		final AbstractPacket p = (AbstractPacket) ctor.newInstance();
+		final Packet p = (Packet) ctor.newInstance();
 		final String[] fields = p.getFields();
-		if (fieldValues.length != (fields.length - 1)) {
-			throw new IllegalStateException("Supplied fields and the number of fields do not match");
+		if (fieldValues.length != (fields.length - 1) && fields.length!=1) {
+			throw new IllegalStateException("Supplied fields and the number of fields do not match for "+packet);
 		}
 		for (int i = 0; i < fields.length; i++) {
 			final String f = fields[i];
@@ -44,13 +44,12 @@ public abstract class AbstractPacket {
 	 * @throws NoSuchFieldException
 	 * @throws ClassNotFoundException
 	 */
-	@Deprecated
-	public static AbstractPacket c(final String classLocation, final Object... fieldValues)
+	public static Packet c(final String classLocation, final Object... fieldValues)
 			throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, NoSuchFieldException, ClassNotFoundException {
 		Class<?> clazz;
 		clazz = Class.forName(classLocation);
-		return AbstractPacket.c(clazz, fieldValues);
+		return Packet.c(clazz, fieldValues);
 	}
 
 	/**
@@ -70,7 +69,7 @@ public abstract class AbstractPacket {
 	 * @throws InstantiationException
 	 * @throws NoSuchFieldException
 	 */
-	public static AbstractPacket decode(final String packetLocation, final ByteBuffer buffer)
+	public static Packet decode(final String packetLocation, final ByteBuffer buffer)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
 			SecurityException, IOException, ClassNotFoundException, InstantiationException, NoSuchFieldException {
 		final PPLInputStream pin = new PPLInputStream(new ByteArrayInputStream(buffer.array()));
@@ -79,7 +78,7 @@ public abstract class AbstractPacket {
 		clazz = Class.forName(packetLocation + packetID);
 
 		final Constructor<?> ctor = clazz.getConstructor();
-		final AbstractPacket p = (AbstractPacket) ctor.newInstance();
+		final Packet p = (Packet) ctor.newInstance();
 		final String[] fields = p.getFields();
 		final String[] types = p.getFieldTypes();
 		for (int i = 0; i < fields.length; i++) {
@@ -127,6 +126,7 @@ public abstract class AbstractPacket {
 		return f.getAnnotation(PacketField.class) != null;
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> T getField(final String field) throws IllegalArgumentException, IllegalAccessException {
 		final String[] fields = this.getFields();
 		final Object[] values = this.getFieldValues();

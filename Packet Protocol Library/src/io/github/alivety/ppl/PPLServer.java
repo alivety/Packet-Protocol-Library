@@ -2,7 +2,6 @@ package io.github.alivety.ppl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
@@ -16,7 +15,6 @@ import java.util.Iterator;
 
 public class PPLServer extends PPL {
 	private final HashMap<SocketChannel, ByteArrayOutputStream> buffers = new HashMap<>();
-	private ServerSocketChannel servlet;
 	private Thread servert;
 
 	private void accept(final SelectionKey key, final Selector sel) {
@@ -52,8 +50,6 @@ public class PPLServer extends PPL {
 						server.configureBlocking(false);
 						server.bind(new InetSocketAddress("localhost", port));
 						server.register(sel, SelectionKey.OP_ACCEPT);
-						PPLServer.this.servlet=server;
-
 						while (true) {
 							sel.select();
 							final Iterator<SelectionKey> keys = sel.selectedKeys().iterator();
@@ -84,7 +80,7 @@ public class PPLServer extends PPL {
 		return this;
 	}
 
-	private void read(final SelectionKey key) {
+	private void read(final SelectionKey key) throws IOException {
 		SocketChannel ch=(SocketChannel)key.channel();
 		try {
 		if (this.buffers.get(ch).toByteArray().length == 0) {// nothing has been
@@ -97,7 +93,6 @@ public class PPLServer extends PPL {
 			final byte[] data = buf.array();
 			this.buffers.get(ch).write(data);
 			if (numRead < 4) {
-				// System.out.println("only "+numRead+" bytes read");
 				return;// try again on the next read
 			} else {
 				this.read(key);
@@ -122,6 +117,7 @@ public class PPLServer extends PPL {
 		}
 		this.buffers.get(ch).reset();// clear all data
 		} catch (Exception e) {
+			key.cancel();
 			Iterator<SocketListener> iter=listeners.iterator();
 			while (iter.hasNext()) iter.next().exception(ch, e);
 		}
@@ -129,11 +125,5 @@ public class PPLServer extends PPL {
 	
 	public PPLServer addListener(SocketListener l) {
 		return (PPLServer) super.addListener(l);
-	}
-
-	@Override
-	public void shutdown() throws IOException {
-		servlet.close();
-		servert.stop();
 	}
 }

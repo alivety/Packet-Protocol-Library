@@ -1,7 +1,6 @@
 package io.github.alivety.ppl;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -25,7 +24,7 @@ public abstract class PPL {
 		final ByteBuffer len = PPL.encodeInt(data.array().length);
 		final ByteBuffer capsule = ByteBuffer.allocate(len.array().length + data.array().length);
 		capsule.put((ByteBuffer) len.position(0)).put((ByteBuffer) data.position(0));
-		return (ByteBuffer) capsule.position(0);
+		return ((ByteBuffer) capsule.position(0)).order(ByteOrder.BIG_ENDIAN);
 	}
 
 	public static ByteBuffer encodeInt(final int i) {
@@ -39,5 +38,7 @@ public abstract class PPL {
 		return this;
 	}
 	
-	public abstract void shutdown() throws IOException;
+	public int listeners() {
+		return listeners.size();
+	}
 }
