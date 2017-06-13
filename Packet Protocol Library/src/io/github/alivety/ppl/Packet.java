@@ -9,7 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-public abstract class Packet {
+public class Packet {
 	public static Packet c(final Class<?> packet, final Object... fieldValues)
 			throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException,
 			InstantiationException, InvocationTargetException, NoSuchMethodException {
