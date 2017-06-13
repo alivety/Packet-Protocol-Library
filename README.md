@@ -35,4 +35,4 @@ Now to read and write this packet:
 This code snippet is pretty self-explanatory up to the last line. `PPL.encapsulate(ByteBuffer)` prepends the length of a ByteBuffer to it.
 This is used when PPL automagically waits until the entire packet is read to trigger `SocketListener.read()`. 
 
-Take a look at [the examples](https://github.com/alivety/Packet-Protocol-Library/tree/master/Packet%20Protocol%20Library/src/io/github/alivety/ppl/examples) for a full implementation.
+Take a look at [the examples](https://github.com/alivety/Packet-Protocol-Library/tree/21e4c2f79829c046dfe78ed043c9fd6bf14ea0d3/Packet%20Protocol%20Library/src/io/github/alivety/ppl/examples) for a full implementation.
