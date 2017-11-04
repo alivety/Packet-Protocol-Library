@@ -1,38 +1,40 @@
 # Packet Protocol Library (PPL)
-PPL is a lightweight network library written in Java. I designed it to be like Netty, but less verbose and more tailored for my specific needs.
-It works by encapsulating all data in developer-defined packets (although it is possible to send raw data). Defining a packet is easy:
+PPL is a lightweight network library written in Java. 
 
-    package example;
-    class Packet0 extends AbstractPacket {
-      @PacketField
-      private final int id=0;
-      @PacketField
-      private String[] array;
-      @PacketField
-      private int number;
+## Packets
+PPL is presupposed around packets. A packet is any encapsulation of data. To define a packet:
+
+    public class Packet1 extends io.github.alivety.ppl.Packet {
+        @io.github.alivety.ppl.PacketField private final int id = 0; // this must be set correctly
+	    @io.github.alivety.ppl.PacketField public String username;
+	    @io.github.alivety.ppl.PacketField public int protocolVersion;
     }
-    
-Take notice that packet classes must be named as "Packet[packet id]".
 
-To create an instance of this Packet0:
+Any data that you wish to transmit, use a packet to capture that data. While PPL does support raw data, it is not officially condoned.
 
-    AbstractPacket.c(Packet0.class, new String[]{"hi","u","ok"}, 7);
-    
-Each argument after the packet class corresponds to a declared packet field, in the order that they were declared.
+## Networking
+PPL offers `PPLServer` and `PPLClient` for servers and clients respectively (obviously). Neither take any arguments to be initialized. What they do use is chained methods:
 
-Now to read and write this packet:
+    PPLServer s = new PPLServer().addSocketListener(new SocketListener(){...}).bind(3030);
+    PPLClient c = new PPLCLient().addSocketListener(new SocketListener(){...}).connect("localhost",3030);
+ 
+There are no further (public) methods for either networking class. They will automagically wait for all the data of a packet to be received, transform raw network data into packets, and fire read events on the socket listener whenever an entire packet is read.
 
-    public void read(SocketChannel ch,ByteBuffer msg) {
-      AbstractPacket p = AbstractPacket.decode("example.Packet",msg);
-      if (p.getPacketID()==0) {
-        String[] array=p.getField("array");
-        int number=p.getField("number");
-      }
-      AbstractPacket rsp=AbstractPacket.c(Packet0.class, new String[]{"hi","u","ok"}, 7);
-      ch.write(PPL.encapsulate(rsp.encode()));
-    }
-    
-This code snippet is pretty self-explanatory up to the last line. `PPL.encapsulate(ByteBuffer)` prepends the length of a ByteBuffer to it.
-This is used when PPL automagically waits until the entire packet is read to trigger `SocketListener.read()`. 
+## SockerListener
+A `SocketListener` has three methods: `connect(SocketChannel ch)`, `read(SocketChannel ch, ByteBuffer msg)`, and `exception(SocketChannel ch, Throwable t)`. `SocketChannel` and `ByteBuffer` both are the Java NIO classes, not an abstraction.
 
-Take a look at [the examples](https://github.com/alivety/Packet-Protocol-Library/tree/21e4c2f79829c046dfe78ed043c9fd6bf14ea0d3/Packet%20Protocol%20Library/src/io/github/alivety/ppl/examples) for a full implementation.
+`connect` is called for servers when a new client connects and for clients when it connects to the server.
+
+`read` is called for servers when a client sends a packet for for clients when the server sends a packet.
+
+`exception` is called for both whenever an exception is thrown by PPL. 
+
+## ByteBuffer to Packet
+Due to the limits of the Java language, the conversion of a ByteBuffer received from `SocketListener.read` is a bit awkward. All packets must be stored in the same package, and they must all have a class name of the form [text][packet id], for example `Packet1`, `Packet2`, ... `Packet33`. In a future version this will be fixed. 
+
+`Packet.decode(String packetLocation,ByteBuffer buf)` is a static method used to convert. `packetLocation` must be the entire package, followed by the name of the packet classes, for example `com.example.packets.Packet` (packets would take the form of `Packet1`. `Packet.decode` returns a packet with all the fields set. You can then use `Packet.getPacketID()` for directly casing the generalized packet to a specific one, and then simply directly access the information (e.g., `(Packet1)(Packet.decode(...).password`) or use `Packet.<T>getField(String field)`.
+
+## Writing Packets
+Use the static method `Packet.c(Class<?> packet, Object... fieldValues)` to create a new packet. For `fieldValues`, pass in an array of Objects in the same order as the fields of the packet were declared, NOT including the ID.
+
+To write this packet, use `SocketChannel.write(PPL.encapsulate(Packet.c(...).encode())`. `PPL.encapsulate()` returns a ByteBuffer with the length of the packet prepended so that PPL can automagically create packets.
