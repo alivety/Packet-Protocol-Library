@@ -218,7 +218,7 @@ public class Packet {
 
 	@Override
 	public String toString() {
-		String s = "AbstractPacket{";
+		/*String s = "AbstractPacket{";
 		try {
 			final String[] fields = this.getFields();
 			final String[] fieldTypes = this.getFieldTypes();
@@ -247,6 +247,7 @@ public class Packet {
 			return s + "NULL";
 		}
 		s = s.substring(0, s.lastIndexOf("; "));
-		return s + "}";
+		return s + "}";*/
+		return "Packet{(Unknown values)}";
 	}
 }

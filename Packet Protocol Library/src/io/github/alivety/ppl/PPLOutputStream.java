@@ -132,6 +132,13 @@ public class PPLOutputStream implements DataOutput {
 			this.writeInt(element);
 		}
 	}
+	
+	public void writeIntArrayArray(int[][]b) throws IOException {
+		writeInt(b.length);
+		for (int[] bb:b) {
+			writeIntArray(bb);
+		}
+	}
 
 	@Override
 	public void writeLong(final long l) throws IOException {
@@ -190,5 +197,4 @@ public class PPLOutputStream implements DataOutput {
 		this.writeFloat(y);
 		this.writeFloat(z);
 	}
-
 }

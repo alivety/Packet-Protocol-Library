@@ -104,6 +104,15 @@ public class PPLInputStream implements DataInput {
 		}
 		return b;
 	}
+	
+	public int[][] readIntArrayArray() throws IOException {
+		int len=this.readInt();
+		int[][] b=new int[len][];
+		for (int i=0;i<len;i++) {
+			b[i]=this.readIntArray();
+		}
+		return b;
+	}
 
 	@Override
 	public String readLine() throws IOException {
