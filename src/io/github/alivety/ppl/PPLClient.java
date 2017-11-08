@@ -68,16 +68,14 @@ public class PPLClient extends PPL {
 	private void read(final SelectionKey key) {
 		final SocketChannel ch = (SocketChannel) key.channel();
 		try {
-		if (this.buffer.toByteArray().length == 0) {// nothing has been read
-			final ByteBuffer buf = ByteBuffer.allocate(4);// we need the packet
-															// length
-			// first
+		if (this.buffer.toByteArray().length == 0) {
+			final ByteBuffer buf = ByteBuffer.allocate(4);
 			buf.order(ByteOrder.BIG_ENDIAN);
 			final int numRead = ch.read(buf);
 			final byte[] data = buf.array();
 			this.buffer.write(data);
 			if (numRead < 4) {
-				return;// try again on the next read
+				return;
 			} else {
 				this.read(key);
 				return;
@@ -86,19 +84,18 @@ public class PPLClient extends PPL {
 		final int len = PPL.decodeInt(PPL.byteStreamToBuffer(this.buffer));
 		final ByteBuffer databuf = ByteBuffer.allocate(len);
 		final int existing = databuf.array().length;
-		final int numRead = ch.read(databuf) + existing;// include bytes already
-														// read
+		final int numRead = ch.read(databuf) + existing;
 		if (numRead < len) {
 			final byte[] data = databuf.array();
 			this.buffer.write(data);
-			return;// try again on the next read
+			return;
 		}
-		// all data is ready
+		
 		final Iterator<SocketListener> iter = this.listeners.iterator();
 		while (iter.hasNext()) {
 			iter.next().read(ch, databuf);
 		}
-		this.buffer.reset();// clear all data
+		this.buffer.reset();
 		} catch (Exception e) {
 			Iterator<SocketListener> iter=listeners.iterator();
 			while (iter.hasNext()) iter.next().exception(ch, e);

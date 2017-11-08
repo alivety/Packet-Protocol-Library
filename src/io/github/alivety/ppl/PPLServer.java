@@ -39,9 +39,7 @@ public class PPLServer extends PPL {
 
 	public PPLServer bind(final int port) throws Exception {
 		try {
-			final ServerSocket servlet = new ServerSocket(port);// easy check
-																// for open
-			// port
+			final ServerSocket servlet = new ServerSocket(port);
 			servert=new Thread("ppl-server-" + port) {
 				@Override
 				public void run() {
@@ -85,34 +83,30 @@ public class PPLServer extends PPL {
 	private void read(final SelectionKey key) throws IOException {
 		SocketChannel ch=(SocketChannel)key.channel();
 		try {
-		if (this.buffers.get(ch).toByteArray().length == 0) {// nothing has been
-			// written yet
-			final ByteBuffer buf = ByteBuffer.allocate(4);// we need the packet
-															// length
-			// first
+		if (this.buffers.get(ch).toByteArray().length == 0) {
+			final ByteBuffer buf = ByteBuffer.allocate(4);
 			buf.order(ByteOrder.BIG_ENDIAN);
 			final int numRead = ch.read(buf);
 			final byte[] data = buf.array();
 			this.buffers.get(ch).write(data);
 			if (numRead < 4) {
-				return;// try again on the next read
+				return;
 			} else {
 				this.read(key);
 				return;
 			}
 		}
-		// data has been written
+		
 		final int len = PPL.decodeInt(ByteBuffer.wrap(this.buffers.get(ch).toByteArray()));
 		final ByteBuffer databuf = ByteBuffer.allocate(len);
 		final int existing = databuf.array().length;
-		final int numRead = ch.read(databuf) + existing;// include bytes already
-														// read
+		final int numRead = ch.read(databuf) + existing;
 		if (numRead < len) {
 			final byte[] data = databuf.array();
 			this.buffers.get(ch).write(data);
-			return;// try again on the next read
+			return;
 		}
-		// all data is ready
+		
 		final Iterator<SocketListener> iter = this.listeners.iterator();
 		while (iter.hasNext()) {
 			iter.next().read(ch, databuf);
