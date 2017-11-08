@@ -1,6 +1,7 @@
 package io.github.alivety.ppl;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -9,6 +10,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+
+import io.github.alivety.ppl.packet.Packet;
 
 public class PPLClient extends PPL {
 	private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -104,5 +107,9 @@ public class PPLClient extends PPL {
 	
 	public PPLClient addListener(SocketListener l) {
 		return (PPLClient) super.addListener(l);
+	}
+	
+	public void writePacket(Packet c) throws IOException {
+		this.ch.write(PPL.encode(c));
 	}
 }

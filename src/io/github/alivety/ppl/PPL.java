@@ -1,6 +1,8 @@
 package io.github.alivety.ppl;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -61,11 +63,24 @@ public class PPL {
 		return b.order(ByteOrder.BIG_ENDIAN).getInt();
 	}
 
-	public static ByteBuffer encapsulate(final ByteBuffer data) {
+	private static ByteBuffer encapsulate(final ByteBuffer data) {
 		final ByteBuffer len = PPL.encodeInt(data.array().length);
 		final ByteBuffer capsule = ByteBuffer.allocate(len.array().length + data.array().length);
 		capsule.put((ByteBuffer) len.position(0)).put((ByteBuffer) data.position(0));
 		return ((ByteBuffer) capsule.position(0)).order(ByteOrder.BIG_ENDIAN);
+	}
+	
+	public static ByteBuffer encode(Packet c) throws IOException {
+		ByteArrayOutputStream bo=new ByteArrayOutputStream();
+		ObjectOutputStream out=new ObjectOutputStream(bo);
+		for (Field f:c.getPacketFields()) {
+			try {
+				out.writeObject(f.get(c));
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				throw new IOException(e);
+			}
+		}
+		return PPL.encapsulate(ByteBuffer.wrap(bo.toByteArray()));
 	}
 
 	public static ByteBuffer encodeInt(final int i) {

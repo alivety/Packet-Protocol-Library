@@ -13,6 +13,8 @@ import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import io.github.alivety.ppl.packet.Packet;
+
 public class PPLServer extends PPL {
 	private final HashMap<SocketChannel, ByteArrayOutputStream> buffers = new HashMap<>();
 	private Thread servert;
@@ -125,5 +127,11 @@ public class PPLServer extends PPL {
 	
 	public PPLServer addListener(SocketListener l) {
 		return (PPLServer) super.addListener(l);
+	}
+	
+	public void broadcastPacket(Packet c) throws IOException {
+		for (SocketChannel ch:buffers.keySet().toArray(new SocketChannel[]{})) {
+			ch.write(PPL.encode(c));
+		}
 	}
 }
