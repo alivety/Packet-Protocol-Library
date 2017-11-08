@@ -1,7 +1,9 @@
 package io.github.alivety.ppl;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -81,6 +83,22 @@ public class PPL {
 			}
 		}
 		return PPL.encapsulate(ByteBuffer.wrap(bo.toByteArray()));
+	}
+	
+	public static Packet decode(ByteBuffer b) throws IOException {
+		Packet p=null;
+		try {
+		ObjectInputStream in=new ObjectInputStream(new ByteArrayInputStream(b.array()));
+		int id=in.readInt();
+		Class<? extends Packet> clz=pids[id];
+		p=clz.newInstance();
+		for (Field f:p.getPacketFields()) {
+			f.set(p, in.readObject());
+		}
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
+		return p;
 	}
 
 	public static ByteBuffer encodeInt(final int i) {
