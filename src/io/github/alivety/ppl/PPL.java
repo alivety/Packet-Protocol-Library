@@ -41,7 +41,7 @@ public class PPL {
 	}
 	
 	public static Packet newInstance(int id,Object...fields) throws InstantiationException, IllegalAccessException {
-		if (id>pids.length-1) {
+		if (id>pids.length-1 || id<0) {
 			throw new IllegalArgumentException("There is no packet id="+id);
 		}
 		if (pids[id]==null) {
