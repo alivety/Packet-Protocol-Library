@@ -17,8 +17,9 @@ public class PPLClient extends PPL {
 	private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 	private SocketChannel ch;
 	private Thread clientt;
+
 	public PPLClient connect(final String host, final int port) throws InterruptedException {
-		clientt=new Thread("ppl-client-" + host + ":" + port) {
+		clientt = new Thread("ppl-client-" + host + ":" + port) {
 			@Override
 			public void run() {
 				try {
@@ -27,7 +28,7 @@ public class PPLClient extends PPL {
 					ch.configureBlocking(false);
 					ch.connect(new InetSocketAddress(host, port));
 					ch.register(selector, SelectionKey.OP_CONNECT);
-					PPLClient.this.ch=ch;
+					PPLClient.this.ch = ch;
 					while (true) {
 						selector.select();
 						final Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
@@ -52,12 +53,13 @@ public class PPLClient extends PPL {
 						}
 					}
 				} catch (ConnectException e) {
-					Iterator<SocketListener> iter=listeners.iterator();
-					while (iter.hasNext()) iter.next().exception(ch, new RuntimeException("Unable to connect",e));
-				}
-				catch (final Exception e) {
-					Iterator<SocketListener> iter=listeners.iterator();
-					while (iter.hasNext()) iter.next().exception(ch, e);
+					Iterator<SocketListener> iter = listeners.iterator();
+					while (iter.hasNext())
+						iter.next().exception(ch, new RuntimeException("Unable to connect", e));
+				} catch (final Exception e) {
+					Iterator<SocketListener> iter = listeners.iterator();
+					while (iter.hasNext())
+						iter.next().exception(ch, e);
 				}
 			}
 		};
@@ -68,44 +70,46 @@ public class PPLClient extends PPL {
 	private void read(final SelectionKey key) {
 		final SocketChannel ch = (SocketChannel) key.channel();
 		try {
-		if (this.buffer.toByteArray().length == 0) {
-			final ByteBuffer buf = ByteBuffer.allocate(4);
-			buf.order(ByteOrder.BIG_ENDIAN);
-			final int numRead = ch.read(buf);
-			final byte[] data = buf.array();
-			this.buffer.write(data);
-			if (numRead < 4) {
-				return;
-			} else {
-				this.read(key);
+			if (this.buffer.toByteArray().length == 0) {
+				final ByteBuffer buf = ByteBuffer.allocate(4);
+				buf.order(ByteOrder.BIG_ENDIAN);
+				final int numRead = ch.read(buf);
+				final byte[] data = buf.array();
+				this.buffer.write(data);
+				if (numRead < 4) {
+					return;
+				} else {
+					this.read(key);
+					return;
+				}
+			}
+			final int len = PPL.decodeInt(PPL.byteStreamToBuffer(this.buffer));
+			final ByteBuffer databuf = ByteBuffer.allocate(len);
+			final int existing = databuf.array().length;
+			final int numRead = ch.read(databuf) + existing;
+			if (numRead < len) {
+				final byte[] data = databuf.array();
+				this.buffer.write(data);
 				return;
 			}
-		}
-		final int len = PPL.decodeInt(PPL.byteStreamToBuffer(this.buffer));
-		final ByteBuffer databuf = ByteBuffer.allocate(len);
-		final int existing = databuf.array().length;
-		final int numRead = ch.read(databuf) + existing;
-		if (numRead < len) {
-			final byte[] data = databuf.array();
-			this.buffer.write(data);
-			return;
-		}
-		
-		final Iterator<SocketListener> iter = this.listeners.iterator();
-		while (iter.hasNext()) {
-			iter.next().read(ch, databuf);
-		}
-		this.buffer.reset();
+
+			final Iterator<SocketListener> iter = this.listeners.iterator();
+			while (iter.hasNext()) {
+				iter.next().read(ch, databuf);
+			}
+			this.buffer.reset();
 		} catch (Exception e) {
-			Iterator<SocketListener> iter=listeners.iterator();
-			while (iter.hasNext()) iter.next().exception(ch, e);
+			Iterator<SocketListener> iter = listeners.iterator();
+			while (iter.hasNext())
+				iter.next().exception(ch, e);
 		}
 	}
-	
+
+	@Override
 	public PPLClient addListener(SocketListener l) {
 		return (PPLClient) super.addListener(l);
 	}
-	
+
 	public void writePacket(Packet c) throws IOException {
 		this.ch.write(PPL.encode(c));
 	}

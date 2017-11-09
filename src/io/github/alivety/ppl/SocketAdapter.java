@@ -21,8 +21,10 @@ public abstract class SocketAdapter implements SocketListener {
 	public final void exception(SocketChannel ch, Throwable t) {
 		this.exception(new PPLAdapter(ch), t);
 	}
-	
+
 	public abstract void connect(PPLAdapter adapter) throws Exception;
+
 	public abstract void read(PPLAdapter adapter, Packet packet) throws Exception;
-	public abstract void exception(PPLAdapter adapter,Throwable t);
+
+	public abstract void exception(PPLAdapter adapter, Throwable t);
 }

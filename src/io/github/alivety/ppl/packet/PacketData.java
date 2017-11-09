@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface PacketData {
 	int id();
+
 	String desc() default "N/A";
+
 	Class<?> bound() default Common.class;
 }
