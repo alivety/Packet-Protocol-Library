@@ -75,6 +75,7 @@ public class PPL {
 	public static ByteBuffer encode(Packet c) throws IOException {
 		ByteArrayOutputStream bo=new ByteArrayOutputStream();
 		ObjectOutputStream out=new ObjectOutputStream(bo);
+		out.writeObject(c.getId());
 		for (Field f:c.getPacketFields()) {
 			try {
 				out.writeObject(f.get(c));
@@ -88,8 +89,9 @@ public class PPL {
 	public static Packet decode(ByteBuffer b) throws IOException {
 		Packet p=null;
 		try {
-		ObjectInputStream in=new ObjectInputStream(new ByteArrayInputStream(b.array()));
-		int id=in.readInt();
+			byte[]input=((ByteBuffer)b.position(0)).array();
+		ObjectInputStream in=new ObjectInputStream(new ByteArrayInputStream(input));
+		int id=(int)in.readObject();
 		Class<? extends Packet> clz=pids[id];
 		p=clz.newInstance();
 		for (Field f:p.getPacketFields()) {

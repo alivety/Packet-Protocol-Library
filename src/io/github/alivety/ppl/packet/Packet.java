@@ -3,6 +3,7 @@ package io.github.alivety.ppl.packet;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class Packet {
@@ -59,5 +60,38 @@ public class Packet {
 	
 	private final PacketData getData() {
 		return this.getClass().getAnnotation(PacketData.class);
+	}
+	
+	private ArrayList<Object> arrayToList(Object[] a) {
+		ArrayList<Object> o=new ArrayList<>();
+		for (Object ob:a) {
+			if (ob instanceof Object[]) {
+				ob=arrayToList((Object[])ob);
+			}
+			o.add(ob);
+		}
+		return o;
+	}
+	
+	@Override
+	public String toString() {
+		try {
+		StringBuilder sb=new StringBuilder();
+		sb.append(this.getClass().getSimpleName()).append("(").append(this.getId()).append(")").append("{");
+		for (Field f:this.getPacketFields()) {
+			Object v=f.get(this);
+			Object val;
+			if (f.getType().isArray()) {
+				val=arrayToList((Object[])v);
+			} else {
+				val=v;
+			}
+			sb.append("").append(f.getType().getSimpleName()+" "+f.getName()+" = "+val);
+			sb.append(";");
+		}
+		return sb.toString().substring(0, sb.lastIndexOf(";"))+"}";
+		} catch (Exception e) {
+			return e.toString();
+		}
 	}
 }

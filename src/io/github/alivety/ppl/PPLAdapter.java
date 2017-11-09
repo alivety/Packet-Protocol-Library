@@ -14,4 +14,9 @@ public class PPLAdapter {
 	public void writePacket(Packet c) throws IOException {
 		ch.write(PPL.encode(c));
 	}
+	
+	@Override
+	public String toString() {
+		return ch.toString();
+	}
 }
