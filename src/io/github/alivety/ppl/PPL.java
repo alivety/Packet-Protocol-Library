@@ -89,8 +89,7 @@ public class PPL {
 	public static Packet decode(ByteBuffer b) throws IOException {
 		Packet p=null;
 		try {
-			byte[]input=((ByteBuffer)b.position(0)).array();
-		ObjectInputStream in=new ObjectInputStream(new ByteArrayInputStream(input));
+		ObjectInputStream in=new ObjectInputStream(new ByteArrayInputStream(b.array()));
 		int id=(int)in.readObject();
 		Class<? extends Packet> clz=pids[id];
 		p=clz.newInstance();
