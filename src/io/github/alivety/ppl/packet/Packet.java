@@ -52,7 +52,7 @@ public class Packet {
 		if (data==null) {
 			throw new IllegalStateException(this.getClass().toString()+" has no @PacketData declaration");
 		}
-		if (!(data.bound().equals(Clientside.class)||data.bound().equals(Serverside.class)||data.bound().equals(Common.class))) {
+		if (!clientBound()||!serverBound()||!commonBound()) {
 			throw new IllegalStateException(this.getClass().toString()+" has an invalid @PacketData.bound() delcaration");
 		}
 	}
