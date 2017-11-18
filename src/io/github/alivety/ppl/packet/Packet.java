@@ -8,88 +8,79 @@ public class Packet {
 	public Packet() {
 		this.checkSanity();
 	}
-
+	
 	public final int getId() {
 		this.checkSanity();
 		return this.getData().id();
 	}
-
+	
 	public final Field[] getPacketFields() {
-		Field[] a = this.getClass().getDeclaredFields();
-		List<Field> al = new ArrayList<>();
-		for (Field f : a) {
-			if (f.isAnnotationPresent(PacketField.class)) {
+		final Field[] a = this.getClass().getDeclaredFields();
+		final List<Field> al = new ArrayList<>();
+		for (final Field f : a)
+			if (f.isAnnotationPresent(PacketField.class))
 				al.add(f);
-			}
-		}
 		return al.toArray(new Field[] {});
 	}
-
-	public final void setPacketField(String name, Object t) throws IllegalArgumentException, IllegalAccessException {
-		Field[] a = this.getPacketFields();
-		for (Field f : a) {
-			if (f.getName().equals(name)) {
+	
+	public final void setPacketField(final String name, final Object t) throws IllegalArgumentException, IllegalAccessException {
+		final Field[] a = this.getPacketFields();
+		for (final Field f : a)
+			if (f.getName().equals(name))
 				f.set(this, t);
-			}
-		}
 	}
-
+	
 	public boolean clientBound() {
-		return getData().bound().equals(Clientside.class) || commonBound();
+		return this.getData().bound().equals(Clientside.class) || this.commonBound();
 	}
-
+	
 	public boolean serverBound() {
-		return getData().bound().equals(Serverside.class) || commonBound();
+		return this.getData().bound().equals(Serverside.class) || this.commonBound();
 	}
-
+	
 	public boolean commonBound() {
-		return getData().bound().equals(Common.class);
+		return this.getData().bound().equals(Common.class);
 	}
-
+	
 	private final void checkSanity() {
-		PacketData data = this.getData();
-		if (data == null) {
+		final PacketData data = this.getData();
+		if (data == null)
 			throw new IllegalStateException(this.getClass().toString() + " has no @PacketData declaration");
-		}
-		if (!clientBound() || !serverBound() || !commonBound()) {
-			throw new IllegalStateException(
-					this.getClass().toString() + " has an invalid @PacketData.bound() delcaration");
-		}
+		if (!this.clientBound() || !this.serverBound() || !this.commonBound())
+			throw new IllegalStateException(this.getClass().toString() + " has an invalid @PacketData.bound() delcaration");
 	}
-
+	
 	private final PacketData getData() {
 		return this.getClass().getAnnotation(PacketData.class);
 	}
-
-	private ArrayList<Object> arrayToList(Object[] a) {
-		ArrayList<Object> o = new ArrayList<>();
+	
+	private ArrayList<Object> arrayToList(final Object[] a) {
+		final ArrayList<Object> o = new ArrayList<>();
 		for (Object ob : a) {
-			if (ob instanceof Object[]) {
-				ob = arrayToList((Object[]) ob);
-			}
+			if (ob instanceof Object[])
+				ob = this.arrayToList((Object[]) ob);
 			o.add(ob);
 		}
 		return o;
 	}
-
+	
 	@Override
 	public String toString() {
 		try {
-			StringBuilder sb = new StringBuilder();
+			final StringBuilder sb = new StringBuilder();
 			sb.append(this.getClass().getSimpleName()).append("(").append(this.getId()).append(")").append("{");
-			for (Field f : this.getPacketFields()) {
-				Object v = f.get(this);
+			for (final Field f : this.getPacketFields()) {
+				final Object v = f.get(this);
 				Object val;
-				if (f.getType().isArray()) {
-					val = arrayToList((Object[]) v);
-				} else {
+				if (f.getType().isArray())
+					val = this.arrayToList((Object[]) v);
+				else
 					val = v;
-				}
 				sb.append("").append(f.getType().getSimpleName() + " " + f.getName() + " = " + val);
 				sb.append(";");
 			}
 			return sb.toString().substring(0, sb.lastIndexOf(";")) + "}";
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			return e.toString();
 		}
 	}

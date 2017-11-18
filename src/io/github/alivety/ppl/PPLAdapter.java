@@ -6,18 +6,18 @@ import java.nio.channels.SocketChannel;
 import io.github.alivety.ppl.packet.Packet;
 
 public class PPLAdapter {
-	private SocketChannel ch;
-
-	protected PPLAdapter(SocketChannel ch) {
+	private final SocketChannel ch;
+	
+	protected PPLAdapter(final SocketChannel ch) {
 		this.ch = ch;
 	}
-
-	public void writePacket(Packet c) throws IOException {
-		ch.write(PPL.encode(c));
+	
+	public void writePacket(final Packet c) throws IOException {
+		this.ch.write(PPL.encode(c));
 	}
-
+	
 	@Override
 	public String toString() {
-		return ch.toString();
+		return this.ch.toString();
 	}
 }

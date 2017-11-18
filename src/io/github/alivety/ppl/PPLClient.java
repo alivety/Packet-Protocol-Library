@@ -17,9 +17,9 @@ public class PPLClient extends PPL {
 	private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 	private SocketChannel ch;
 	private Thread clientt;
-
+	
 	public PPLClient connect(final String host, final int port) throws InterruptedException {
-		clientt = new Thread("ppl-client-" + host + ":" + port) {
+		this.clientt = new Thread("ppl-client-" + host + ":" + port) {
 			@Override
 			public void run() {
 				try {
@@ -35,38 +35,35 @@ public class PPLClient extends PPL {
 						while (keys.hasNext()) {
 							final SelectionKey key = keys.next();
 							keys.remove();
-
-							if (!key.isValid()) {
+							
+							if (!key.isValid())
 								continue;
-							}
 							if (key.isConnectable()) {
 								((SocketChannel) key.channel()).finishConnect();
 								key.interestOps(SelectionKey.OP_READ);
 								final Iterator<SocketListener> iter = PPLClient.this.listeners.iterator();
-								while (iter.hasNext()) {
+								while (iter.hasNext())
 									iter.next().connect((SocketChannel) key.channel());
-								}
 							}
-							if (key.isReadable()) {
+							if (key.isReadable())
 								PPLClient.this.read(key);
-							}
 						}
 					}
-				} catch (ConnectException e) {
-					Iterator<SocketListener> iter = listeners.iterator();
+				} catch (final ConnectException e) {
+					final Iterator<SocketListener> iter = PPLClient.this.listeners.iterator();
 					while (iter.hasNext())
-						iter.next().exception(ch, new RuntimeException("Unable to connect", e));
+						iter.next().exception(PPLClient.this.ch, new RuntimeException("Unable to connect", e));
 				} catch (final Exception e) {
-					Iterator<SocketListener> iter = listeners.iterator();
+					final Iterator<SocketListener> iter = PPLClient.this.listeners.iterator();
 					while (iter.hasNext())
-						iter.next().exception(ch, e);
+						iter.next().exception(PPLClient.this.ch, e);
 				}
 			}
 		};
-		clientt.start();
+		this.clientt.start();
 		return this;
 	}
-
+	
 	private void read(final SelectionKey key) {
 		final SocketChannel ch = (SocketChannel) key.channel();
 		try {
@@ -76,9 +73,9 @@ public class PPLClient extends PPL {
 				final int numRead = ch.read(buf);
 				final byte[] data = buf.array();
 				this.buffer.write(data);
-				if (numRead < 4) {
+				if (numRead < 4)
 					return;
-				} else {
+				else {
 					this.read(key);
 					return;
 				}
@@ -92,25 +89,24 @@ public class PPLClient extends PPL {
 				this.buffer.write(data);
 				return;
 			}
-
+			
 			final Iterator<SocketListener> iter = this.listeners.iterator();
-			while (iter.hasNext()) {
+			while (iter.hasNext())
 				iter.next().read(ch, databuf);
-			}
 			this.buffer.reset();
-		} catch (Exception e) {
-			Iterator<SocketListener> iter = listeners.iterator();
+		} catch (final Exception e) {
+			final Iterator<SocketListener> iter = this.listeners.iterator();
 			while (iter.hasNext())
 				iter.next().exception(ch, e);
 		}
 	}
-
+	
 	@Override
-	public PPLClient addListener(SocketListener l) {
+	public PPLClient addListener(final SocketListener l) {
 		return (PPLClient) super.addListener(l);
 	}
-
-	public void writePacket(Packet c) throws IOException {
+	
+	public void writePacket(final Packet c) throws IOException {
 		this.ch.write(PPL.encode(c));
 	}
 }
