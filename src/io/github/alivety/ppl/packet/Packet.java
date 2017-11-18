@@ -46,8 +46,8 @@ public class Packet {
 		final PacketData data = this.getData();
 		if (data == null)
 			throw new IllegalStateException(this.getClass().toString() + " has no @PacketData declaration");
-		if (!this.clientBound() || !this.serverBound() || !this.commonBound())
-			throw new IllegalStateException(this.getClass().toString() + " has an invalid @PacketData.bound() delcaration");
+		if (!this.clientBound() && !this.serverBound() && !this.commonBound())
+			throw new IllegalStateException(this.getClass().toString() + " has an invalid @PacketData.bound() delcaration: "+data.bound());
 	}
 	
 	private final PacketData getData() {

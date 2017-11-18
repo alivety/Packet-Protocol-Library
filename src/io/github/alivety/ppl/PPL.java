@@ -50,6 +50,10 @@ public class PPL {
 		return p;
 	}
 	
+	public static Class<? extends Packet> getUnbuiltPacket(int id) {
+		return pids[id];
+	}
+	
 	public static ByteBuffer byteStreamToBuffer(final ByteArrayOutputStream o) {
 		return ByteBuffer.wrap(o.toByteArray()).order(ByteOrder.BIG_ENDIAN);
 	}
