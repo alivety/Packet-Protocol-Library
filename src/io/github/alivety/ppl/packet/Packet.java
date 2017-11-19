@@ -1,8 +1,12 @@
 package io.github.alivety.ppl.packet;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.github.alivety.ppl.PPL;
 
 public class Packet {
 	public Packet() {
@@ -40,6 +44,10 @@ public class Packet {
 	
 	public boolean commonBound() {
 		return this.getData().bound().equals(Common.class);
+	}
+	
+	public ByteBuffer encode() throws IOException {
+		return PPL.encode(this);
 	}
 	
 	private final void checkSanity() {
