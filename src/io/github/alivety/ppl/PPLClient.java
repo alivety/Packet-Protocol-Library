@@ -69,7 +69,6 @@ public class PPLClient extends PPL {
 	private void read(final SelectionKey key) {
 		final SocketChannel ch = (SocketChannel) key.channel();
 		try {
-			System.out.println(buffer);
 			if (this.buffer.toByteArray().length == 0) {
 				final ByteBuffer buf = ByteBuffer.allocate(4);
 				buf.order(ByteOrder.BIG_ENDIAN);
