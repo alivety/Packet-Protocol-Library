@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -26,6 +27,25 @@ public class PPL {
 			throw new IllegalStateException("Packets have already been loaded");
 		final Reflections ref = new Reflections("");
 		PPL.packets = ref.getSubTypesOf(Packet.class);
+		PPL.pids = (Class<? extends Packet>[]) new Class<?>[PPL.packets.size()];
+		final Iterator<Class<? extends Packet>> iter = PPL.packets.iterator();
+		while (iter.hasNext()) {
+			final Packet p = iter.next().newInstance();
+			if (PPL.pids[p.getId()] == null)
+				PPL.pids[p.getId()] = p.getClass();
+			else
+				throw new IllegalStateException(p.getClass().toString() + " and " + PPL.pids[p.getId()] + " share the same packet id");
+		}
+	}
+	
+	public static void manualLoadPacket(Class<? extends Packet> p) {
+		if (packets==null)
+			packets=new HashSet<Class<? extends Packet>>();
+		packets.add(p);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static void manualLoadPackets() throws InstantiationException, IllegalAccessException {
 		PPL.pids = (Class<? extends Packet>[]) new Class<?>[PPL.packets.size()];
 		final Iterator<Class<? extends Packet>> iter = PPL.packets.iterator();
 		while (iter.hasNext()) {

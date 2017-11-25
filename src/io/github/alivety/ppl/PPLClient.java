@@ -17,6 +17,7 @@ public class PPLClient extends PPL {
 	private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 	private SocketChannel ch;
 	private Thread clientt;
+	private PPLAdapter adapter;
 	
 	public PPLClient connect(final String host, final int port) throws InterruptedException {
 		this.clientt = new Thread("ppl-client-" + host + ":" + port) {
@@ -29,6 +30,7 @@ public class PPLClient extends PPL {
 					ch.connect(new InetSocketAddress(host, port));
 					ch.register(selector, SelectionKey.OP_CONNECT);
 					PPLClient.this.ch = ch;
+					PPLClient.this.adapter=new PPLAdapter(ch);
 					while (true) {
 						selector.select();
 						final Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
@@ -67,6 +69,7 @@ public class PPLClient extends PPL {
 	private void read(final SelectionKey key) {
 		final SocketChannel ch = (SocketChannel) key.channel();
 		try {
+			System.out.println(buffer);
 			if (this.buffer.toByteArray().length == 0) {
 				final ByteBuffer buf = ByteBuffer.allocate(4);
 				buf.order(ByteOrder.BIG_ENDIAN);
@@ -89,7 +92,6 @@ public class PPLClient extends PPL {
 				this.buffer.write(data);
 				return;
 			}
-			
 			final Iterator<SocketListener> iter = this.listeners.iterator();
 			while (iter.hasNext())
 				iter.next().read(ch, databuf);

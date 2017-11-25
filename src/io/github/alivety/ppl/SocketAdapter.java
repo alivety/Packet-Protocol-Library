@@ -6,20 +6,22 @@ import java.nio.channels.SocketChannel;
 import io.github.alivety.ppl.packet.Packet;
 
 public abstract class SocketAdapter implements SocketListener {
+	private PPLAdapter adapter;
 	
 	@Override
 	public final void connect(final SocketChannel ch) throws Exception {
-		this.connect(new PPLAdapter(ch));
+		this.adapter=new PPLAdapter(ch);
+		this.connect(adapter);
 	}
 	
 	@Override
 	public final void read(final SocketChannel ch, final ByteBuffer msg) throws Exception {
-		this.read(new PPLAdapter(ch), PPL.decode(msg));
+		this.read(adapter, PPL.decode(msg));
 	}
 	
 	@Override
 	public final void exception(final SocketChannel ch, final Throwable t) {
-		this.exception(new PPLAdapter(ch), t);
+		this.exception(adapter, t);
 	}
 	
 	public abstract void connect(PPLAdapter adapter) throws Exception;
