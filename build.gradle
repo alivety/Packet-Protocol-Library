@@ -1,0 +1,15 @@
+apply plugin: "java"
+sourceCompatibility = 1.7
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+sourceSets.main.java.srcDirs = [ "src/" ]
+
+allprojects {
+    repositories {
+        maven { url 'https://jitpack.io' }
+    }
+
+    dependencies {
+        compile 'com.github.ronmamo:reflections:21959e6e'
+    }
+}
